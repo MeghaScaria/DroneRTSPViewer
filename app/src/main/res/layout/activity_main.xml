@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".MainActivity">
+
+    <!-- RTSP URL Input -->
+    <EditText
+        android:id="@+id/rtspUrlInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/enter_rtsp_url"
+        android:inputType="textUri"
+        android:padding="8dp"
+        android:autofillHints="url"
+        android:minHeight="48dp"
+        android:maxWidth="180dp"
+        android:layout_margin="8dp"
+        android:background="#FFFFFF"
+        android:textColor="#000000"
+        android:textColorHint="#808080" />
+
+    <!-- Play Button -->
+    <Button
+        android:id="@+id/playButton"
+        android:layout_below="@id/rtspUrlInput"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/play"
+        android:layout_marginTop="8dp" />
+
+    <!-- VLC Video Layout for Streaming -->
+    <org.videolan.libvlc.util.VLCVideoLayout
+        android:id="@+id/videoLayout"
+        android:layout_below="@id/playButton"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="16dp" />
+
+    <!-- Record Button -->
+    <Button
+        android:id="@+id/recordButton"
+        android:layout_below="@id/videoLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/record"
+        android:layout_marginTop="16dp" />
+
+    <!-- PiP Button -->
+    <Button
+        android:id="@+id/pipButton"
+        android:layout_toEndOf="@id/recordButton"
+        android:layout_alignTop="@id/recordButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/pip"
+        android:layout_marginStart="16dp" />
+
+</RelativeLayout>

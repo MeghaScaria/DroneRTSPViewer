@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">DroneRTSPViewer</string>
+    <string name="enter_rtsp_url">Enter RTSP URL</string>
+    <string name="play">Play</string>
+    <string name="record">Record</string>
+    <string name="pip">PiP</string>
+</resources>
