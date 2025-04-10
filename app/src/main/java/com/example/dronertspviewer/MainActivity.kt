@@ -2,9 +2,11 @@ package com.example.dronertspviewer
 
 import android.app.PictureInPictureParams
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.util.Rational
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
@@ -18,35 +20,37 @@ class MainActivity : AppCompatActivity() {
     private lateinit var libVLC: LibVLC
     private lateinit var mediaPlayer: MediaPlayer
     private lateinit var videoLayout: VLCVideoLayout
+    private lateinit var urlInput: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Initialize views
         videoLayout = findViewById(R.id.videoLayout)
+        urlInput = findViewById(R.id.rtspUrlInput)
 
+        // Set up VLC
         val options = arrayListOf<String>()
         libVLC = LibVLC(this, options)
         mediaPlayer = MediaPlayer(libVLC)
         mediaPlayer.attachViews(videoLayout, null, false, false)
 
-        // Set up the Play button
-        val playButton = findViewById<Button>(R.id.playButton)
-        playButton.setOnClickListener {
-            playStream("rtsp://192.168.1.3:554/ch0")
+        // Play Button
+        findViewById<Button>(R.id.playButton).setOnClickListener {
+            val url = urlInput.text.toString()
+            playStream(url)
         }
 
-        // Set up the Record button
-        val recordButton = findViewById<Button>(R.id.recordButton)
-        recordButton.setOnClickListener {
-            playStream("rtsp://192.168.1.3:554/ch0", record = true)
+        // Record Button
+        findViewById<Button>(R.id.recordButton).setOnClickListener {
+            val url = urlInput.text.toString()
+            playStream(url, record = true)
         }
 
-        // Set up the PiP button
-        val pipButton = findViewById<Button>(R.id.pipButton)
-        pipButton.setOnClickListener {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                // Use a fixed aspect ratio (e.g., 16:9) for simplicity
+        // PiP Button
+        findViewById<Button>(R.id.pipButton).setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val aspectRatio = Rational(16, 9)
                 val params = PictureInPictureParams.Builder()
                     .setAspectRatio(aspectRatio)
@@ -60,50 +64,42 @@ class MainActivity : AppCompatActivity() {
 
     private fun getOutputFilePath(): String {
         val folder = getExternalFilesDir(null)
-        val file = File(folder, "recorded_stream.mp4")
-        return file.absolutePath
+        return File(folder, "recorded_stream.mp4").absolutePath
     }
 
     private fun playStream(url: String, record: Boolean = false) {
-        if (url.isNotEmpty()) {
-            try {
-                val media = Media(libVLC, url.toUri())
-                media.setHWDecoderEnabled(true, false)
-
-                if (record) {
-                    val outputFilePath = getOutputFilePath()
-                    @Suppress("SpellCheckingInspection")
-                    val soutOption = ":sout=#duplicate{dst=display,dst=std{access=file,mux=mp4,dst=${outputFilePath}}}"
-                    media.addOption(soutOption)
-                }
-
-                mediaPlayer.media = media
-                media.release()
-                mediaPlayer.play()
-            } catch (e: Exception) {
-                Toast.makeText(this, "Error playing stream: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-        } else {
+        if (url.isBlank()) {
             Toast.makeText(this, "Please enter a valid RTSP URL", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        try {
+            val media = Media(libVLC, url.toUri())
+            media.setHWDecoderEnabled(true, false)
+
+            if (record) {
+                val outputFilePath = getOutputFilePath()
+                val soutOption = ":sout=#duplicate{dst=display,dst=std{access=file,mux=mp4,dst=$outputFilePath}}"
+                media.addOption(soutOption)
+            }
+
+            mediaPlayer.media?.release()
+            mediaPlayer.media = media
+            mediaPlayer.play()
+
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error playing stream: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 
-    // Override to handle changes when entering or exiting PiP
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration?) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
-        // Hide UI controls when in PiP mode
-        val playButton = findViewById<Button>(R.id.playButton)
-        val recordButton = findViewById<Button>(R.id.recordButton)
-        val pipButton = findViewById<Button>(R.id.pipButton)
-        if (isInPictureInPictureMode) {
-            playButton.visibility = android.view.View.GONE
-            recordButton.visibility = android.view.View.GONE
-            pipButton.visibility = android.view.View.GONE
-        } else {
-            playButton.visibility = android.view.View.VISIBLE
-            recordButton.visibility = android.view.View.VISIBLE
-            pipButton.visibility = android.view.View.VISIBLE
-        }
+
+        val visibility = if (isInPictureInPictureMode) android.view.View.GONE else android.view.View.VISIBLE
+        findViewById<Button>(R.id.playButton).visibility = visibility
+        findViewById<Button>(R.id.recordButton).visibility = visibility
+        findViewById<Button>(R.id.pipButton).visibility = visibility
+        urlInput.visibility = visibility
     }
 
     override fun onStop() {
@@ -111,11 +107,11 @@ class MainActivity : AppCompatActivity() {
         if (mediaPlayer.isPlaying) {
             mediaPlayer.stop()
         }
-        mediaPlayer.detachViews()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        mediaPlayer.detachViews()
         mediaPlayer.release()
         libVLC.release()
     }
