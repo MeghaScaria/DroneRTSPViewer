@@ -31,7 +31,14 @@ class MainActivity : AppCompatActivity() {
         urlInput = findViewById(R.id.rtspUrlInput)
 
         // Set up VLC
-        val options = arrayListOf<String>()
+        //val options = arrayListOf<String>()
+        val options = arrayListOf(
+            "--network-caching=1500",
+            "--no-drop-late-frames",
+            "--no-skip-frames",
+            "--rtsp-tcp"
+        )
+
         libVLC = LibVLC(this, options)
         mediaPlayer = MediaPlayer(libVLC)
         mediaPlayer.attachViews(videoLayout, null, false, false)

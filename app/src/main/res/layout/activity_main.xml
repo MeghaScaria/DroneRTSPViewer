@@ -57,7 +57,10 @@
     <org.videolan.libvlc.util.VLCVideoLayout
         android:id="@+id/videoLayout"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="300dp"
+        android:layout_below="@id/playButton"
+        android:layout_marginTop="16dp"
         android:background="#000000" />
+
+
 </LinearLayout>
